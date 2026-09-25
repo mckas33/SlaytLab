@@ -1,0 +1,386 @@
+.toast-region { pointer-events: none; }
+.toast { pointer-events: auto; animation: toast-in-smooth .32s cubic-bezier(.22,1,.36,1) both; will-change: opacity, transform; }
+.toast.toast-exiting { animation: toast-out-smooth .36s cubic-bezier(.55,0,.78,.25) both; }
+@keyframes toast-in-smooth { from { opacity: 0; transform: translate3d(20px,0,0) scale(.98); } to { opacity: 1; transform: translate3d(0,0,0) scale(1); } }
+@keyframes toast-out-smooth { from { opacity: 1; transform: translate3d(0,0,0) scale(1); } to { opacity: 0; transform: translate3d(20px,0,0) scale(.98); } }
+
+.choice-card.correct-choice { border-color: var(--al-correct); background: var(--al-correct-bg); }
+.choice-correct { font-weight: 800; }
+.choice-card:not(.correct-choice) .choice-correct { color: var(--al-text-muted); }
+.choice-card.correct-choice .choice-correct { color: var(--al-correct); }
+.question-image-preview { display: block; width: 100%; max-height: 180px; object-fit: contain; border: 1px solid var(--al-border); border-radius: 10px; background: #f8fafc; }
+
+.multi-image-region-editor { display: block; }
+.selected-image-workspace, .region-canvas-column { min-width: 0; display: grid; gap: 10px; }
+.region-canvas-tools { display: flex; gap: 8px; }
+.natural-image-stage, .natural-region-wrapper { position: relative; width: 100%; overflow: hidden; border: 1px solid var(--al-border); border-radius: 14px; background: #f1f5f9; }
+.natural-image-stage img, .natural-region-wrapper img { display: block; width: 100%; height: auto; }
+.natural-region-overlay, .natural-region-wrapper svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.natural-region-overlay.drawing { cursor: crosshair; }
+.natural-region { fill: rgba(37,99,235,.16); stroke: #2563eb; stroke-width: 2; vector-effect: non-scaling-stroke; cursor: pointer; transition: fill .15s ease, stroke .15s ease, filter .15s ease; }
+.natural-region:hover, .natural-region.selected { fill: rgba(13,125,120,.25); stroke: var(--al-accent); filter: drop-shadow(0 0 4px rgba(13,125,120,.45)); }
+.natural-region.correct { fill: rgba(22,163,74,.26); stroke: var(--al-correct); }
+.natural-region.wrong { fill: rgba(220,38,38,.25); stroke: var(--al-wrong); }
+.natural-region.muted { fill: rgba(148,163,184,.08); stroke: #cbd5e1; }
+.region-image-missing { padding: 40px; color: var(--al-text-muted); text-align: center; }
+.natural-region-wrapper { aspect-ratio: auto; }
+
+@media (max-width: 720px) { .multi-image-region-editor { grid-template-columns: 1fr; } .image-card-list { grid-template-columns: repeat(2,minmax(0,1fr)); } .image-add-button { grid-column: 1 / -1; } .region-canvas-tools { flex-wrap: wrap; } }
+/* written-answer alanının kendi güvenli boşluğu */
+.written-answer-box {
+  box-sizing: border-box;
+  padding-inline: 2px;
+}
+
+.written-answer-row {
+  flex-wrap: wrap;
+}
+
+.written-answer-row input {
+  min-width: 180px;
+}
+
+.written-answer-row .primary-button {
+  flex: 1 1 118px;
+  min-width: 118px;
+  max-width: 160px;
+}
+
+@media (max-width: 480px) {
+  .written-answer-row {
+    flex-direction: column;
+  }
+  .written-answer-row .primary-button {
+    width: 100%;
+    max-width: none;
+    flex: none;
+  }
+}
+
+/* ============================================================
+   UZUN METİN TAŞMA DÜZELTMESİ
+   (soru başlığı, şıklar, açıklamalar, cevaplar)
+   ============================================================ */
+
+/* Kelime kırma — uzun/tek parça metinler artık satır içinde kırılır */
+.game-title,
+.game-description,
+.game-choice-text,
+.game-result-main strong,
+.game-result-details b,
+.game-result-description p,
+.result-hero h1,
+.result-hero p,
+.question-editor-section-heading p,
+.question-editor-section-heading span,
+.question-editor-intro p,
+.region-question-info p,
+.selected-target-preview strong,
+.region-question-empty-target span,
+.written-answer-status > span {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* Flex/grid item'lara min-width:0 vermezsek içerik konteyneri patlatıyor */
+.game-choice,
+.game-choice-text,
+.game-question-heading,
+.game-result-main,
+.game-result-main > div:last-child,
+.game-result-details > div,
+.written-answer-status,
+.question-editor-section-heading,
+.question-editor-section-heading > div,
+.result-hero-copy {
+  min-width: 0;
+}
+
+/* Şık butonu artık üstte hizalı kalsın (metin 2-3 satıra düşerse) */
+.game-choice {
+  align-items: flex-start;
+}
+
+.game-choice-letter,
+.game-choice > span:first-child {
+  margin-top: 1px;
+}
+
+/* Sonuç kartında (Senin cevabın / Doğru cevap) sütunlar artık sıkışabilir */
+.game-answer-result {
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.7fr);
+}
+
+.game-result-details {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+/* ============================================================
+   FLASHCARD SORU TİPİ
+   ============================================================ */
+
+.flashcard-question-view {
+  align-items: center;
+}
+
+.flashcard-image-wrap {
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.flashcard-stage {
+  perspective: 1600px;
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+  min-height: 260px;
+}
+
+.flashcard-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 260px;
+  transition: transform 0.6s cubic-bezier(.4,.2,.2,1);
+  transform-style: preserve-3d;
+}
+
+.flashcard-stage.is-flipped .flashcard-inner {
+  transform: rotateY(180deg);
+}
+
+.flashcard-face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 32px 28px;
+  border: 1px solid var(--al-border);
+  border-radius: 20px;
+  backface-visibility: hidden;
+  text-align: center;
+}
+
+.flashcard-front {
+  background:
+    radial-gradient(circle at 50% 0%, rgba(15, 38, 71, 0.05), transparent 60%),
+    #fff;
+  box-shadow: var(--al-shadow-md);
+}
+
+.flashcard-back {
+  background:
+    radial-gradient(circle at 50% 0%, rgba(13, 125, 120, 0.08), transparent 60%),
+    #fff;
+  border-color: var(--al-accent-border);
+  box-shadow: var(--al-shadow-md);
+  transform: rotateY(180deg);
+}
+
+.flashcard-face-kicker {
+  display: inline-flex;
+  color: var(--al-accent);
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.flashcard-back .flashcard-face-kicker {
+  color: var(--al-primary);
+}
+
+.flashcard-face-text {
+  margin: 0;
+  max-width: 440px;
+  color: var(--al-text);
+  font-size: 19px;
+  font-weight: 650;
+  line-height: 1.5;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.flashcard-reveal-button {
+  margin-top: 6px;
+}
+
+.flashcard-judge-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.flashcard-judge-label {
+  color: var(--al-text-muted);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.flashcard-judge-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.flashcard-judge-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 44px;
+  padding: 10px 18px;
+  border-radius: var(--al-radius-sm);
+  border: 1px solid var(--al-border);
+  background: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background var(--al-fast),
+    border-color var(--al-fast),
+    color var(--al-fast),
+    transform var(--al-fast);
+}
+
+.flashcard-judge-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.flashcard-judge-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.flashcard-judge-button.correct {
+  border-color: var(--al-correct-border);
+  color: var(--al-correct);
+}
+
+.flashcard-judge-button.correct:hover:not(:disabled) {
+  background: var(--al-correct-bg);
+}
+
+.flashcard-judge-button.wrong {
+  border-color: var(--al-wrong-border);
+  color: var(--al-wrong);
+}
+
+.flashcard-judge-button.wrong:hover:not(:disabled) {
+  background: var(--al-wrong-bg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flashcard-inner {
+    transition: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .flashcard-face {
+    padding: 24px 18px;
+  }
+
+  .flashcard-face-text {
+    font-size: 16px;
+  }
+
+  .flashcard-judge-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .flashcard-judge-button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Flashcard sonuç paneli: tek sütun (Senin cevabın satırı yok) */
+.game-result-details.single-column {
+  grid-template-columns: 1fr;
+}
+
+.game-result-details.single-column > div {
+  border-left: 0;
+}
+
+@media (max-width: 720px) {
+  .game-result-details.single-column {
+    grid-template-columns: 1fr;
+  }
+
+  .game-result-details.single-column > div {
+    border-top: 0;
+  }
+}
+
+/* ============================================================
+   FLASHCARD — boşluk / spacing düzeltmesi
+   ============================================================ */
+
+.flashcard-question-view {
+  padding: 28px;
+  gap: 26px;
+}
+
+.flashcard-image-wrap {
+  margin-top: 4px;
+}
+
+.flashcard-stage {
+  margin: 6px 0;
+}
+
+.flashcard-judge-row {
+  margin-top: 8px;
+  margin-bottom: 6px;
+}
+
+@media (max-width: 560px) {
+  .flashcard-question-view {
+    padding: 16px;
+    gap: 20px;
+  }
+
+  .flashcard-stage {
+    margin: 4px 0;
+  }
+
+  .flashcard-judge-row {
+    margin-top: 4px;
+    margin-bottom: 2px;
+  }
+}
+
+/* Uzun soru / cevap metni için ek taşma koruması */
+.flashcard-face-text {
+  max-height: 100%;
+  overflow-y: auto;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  hyphens: auto;
+}
+
+.flashcard-judge-label {
+  overflow-wrap: break-word;
+  word-break: break-word;
+  text-align: center;
+  max-width: 90%;
+}
+/* Flashcard içeriğini grid içinde yatayda ortala */
+.flashcard-question-view {
+  justify-items: center;
+}
+
+.flashcard-stage,
+.flashcard-image-wrap,
+.flashcard-judge-row {
+  justify-self: center;
+  width: 100%;
+}
