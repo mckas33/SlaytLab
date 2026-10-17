@@ -356,7 +356,7 @@ export default function EditorPage({
 
         <div className="editor-topbar-status">
           <span className="editor-status-dot" />
-          <span>Yerel kayıt</span>
+          <span>Bulut kaydı</span>
         </div>
       </header>
 

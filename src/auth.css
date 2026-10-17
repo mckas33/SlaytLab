@@ -1,0 +1,436 @@
+/* =========================================================
+   AUTH EKRANI
+   ========================================================= */
+
+.auth-page {
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+  background:
+    radial-gradient(circle at 76% 12%, rgba(13, 125, 120, 0.08), transparent 30%),
+    linear-gradient(180deg, #f8fafc 0%, var(--al-bg) 100%);
+}
+
+.auth-shell {
+  width: min(440px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.auth-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 11px;
+}
+
+.auth-brand-mark {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: var(--al-primary);
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(15, 38, 71, 0.16);
+}
+
+.auth-brand > div {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.auth-brand strong {
+  color: var(--al-primary);
+  font-size: 15px;
+  letter-spacing: -0.02em;
+}
+
+.auth-brand span {
+  color: var(--al-text-soft);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+}
+
+.auth-card {
+  padding: 26px;
+  border: 1px solid var(--al-border);
+  border-radius: var(--al-radius-xl);
+  background: #fff;
+  box-shadow: var(--al-shadow-lg);
+}
+
+.auth-footer {
+  text-align: center;
+  color: var(--al-text-soft);
+  font-size: 11px;
+}
+
+.auth-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin-bottom: 24px;
+  padding: 4px;
+  border: 1px solid var(--al-border);
+  border-radius: 12px;
+  background: #edf1f4;
+}
+
+.auth-tabs button {
+  height: 38px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--al-text-muted);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background var(--al-base),
+    color var(--al-base),
+    box-shadow var(--al-base);
+}
+
+.auth-tabs button:hover:not(.active) {
+  color: var(--al-text);
+}
+
+.auth-tabs button.active {
+  background: #fff;
+  color: var(--al-primary);
+  box-shadow: 0 2px 8px rgba(15, 38, 71, 0.07);
+}
+
+.auth-heading {
+  margin-bottom: 20px;
+}
+
+.auth-heading h1 {
+  color: var(--al-primary);
+  font-size: 22px;
+  font-weight: 780;
+  letter-spacing: -0.03em;
+}
+
+.auth-heading p {
+  margin-top: 6px;
+  color: var(--al-text-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.auth-form {
+  display: grid;
+  gap: 15px;
+}
+
+.auth-field {
+  display: grid;
+  gap: 6px;
+}
+
+.auth-field label {
+  color: var(--al-text);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.auth-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.auth-input-icon {
+  position: absolute;
+  left: 13px;
+  color: var(--al-text-soft);
+  pointer-events: none;
+}
+
+.auth-input-wrap input {
+  width: 100%;
+  height: 46px;
+  padding: 0 44px 0 40px;
+  border: 1px solid var(--al-border);
+  border-radius: 10px;
+  outline: none;
+  background: var(--al-surface-alt);
+  color: var(--al-text);
+  font-size: 16px;
+  transition:
+    border-color var(--al-base),
+    box-shadow var(--al-base),
+    background var(--al-base);
+}
+
+.auth-input-wrap input::placeholder {
+  color: var(--al-text-soft);
+}
+
+.auth-input-wrap input:focus {
+  border-color: var(--al-accent);
+  background: #fff;
+  box-shadow: 0 0 0 3px var(--al-accent-soft);
+}
+
+.auth-input-wrap input:disabled {
+  opacity: 0.6;
+}
+
+.auth-eye {
+  position: absolute;
+  right: 6px;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--al-text-soft);
+  cursor: pointer;
+}
+
+.auth-eye:hover {
+  background: var(--al-surface-soft);
+  color: var(--al-text);
+}
+
+.auth-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 11px 13px;
+  border: 1px solid var(--al-wrong-border);
+  border-radius: var(--al-radius-sm);
+  background: var(--al-wrong-bg);
+  color: var(--al-wrong);
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.45;
+}
+
+.auth-error svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.auth-submit {
+  width: 100%;
+  min-height: 46px;
+  margin-top: 4px;
+}
+
+.auth-spinner {
+  animation: auth-spin 0.8s linear infinite;
+}
+
+@keyframes auth-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.auth-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  text-align: center;
+}
+
+.auth-success-icon {
+  width: 56px;
+  height: 56px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--al-accent-border);
+  border-radius: 16px;
+  background: var(--al-accent-soft);
+  color: var(--al-accent);
+}
+
+.auth-success h1 {
+  color: var(--al-primary);
+  font-size: 21px;
+  font-weight: 780;
+}
+
+.auth-success p {
+  color: var(--al-text-muted);
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.auth-success p strong {
+  color: var(--al-text);
+}
+
+/* =========================================================
+   KULLANICI ÇUBUĞU
+   ========================================================= */
+
+.app-userbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+  min-height: 40px;
+  padding: 6px 24px;
+  border-bottom: 1px solid var(--al-border);
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--al-text-muted);
+  font-size: 11px;
+}
+
+.app-userbar + .home-page,
+.app-userbar + .editor-page,
+.app-userbar + .home-page .home-shell {
+  min-height: calc(100svh - 41px);
+}
+
+.app-userbar-email {
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 650;
+}
+
+.app-userbar-logout {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--al-border);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--al-text-secondary);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    border-color var(--al-fast),
+    color var(--al-fast),
+    background var(--al-fast);
+}
+
+.app-userbar-logout:hover:not(:disabled) {
+  border-color: var(--al-wrong-border);
+  background: var(--al-wrong-bg);
+  color: var(--al-wrong);
+}
+
+.app-userbar-logout:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.app-save-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-right: auto;
+  border: 0;
+  background: transparent;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.app-save-status.saved {
+  color: var(--al-accent);
+}
+
+.app-save-status.saving {
+  color: var(--al-text-muted);
+}
+
+.app-save-status.error {
+  padding: 4px 8px;
+  border-radius: 7px;
+  background: var(--al-wrong-bg);
+  color: var(--al-wrong);
+  cursor: pointer;
+}
+
+/* =========================================================
+   TAM EKRAN DURUM KARTLARI
+   ========================================================= */
+
+.app-screen-state {
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: var(--al-bg);
+}
+
+.app-screen-card {
+  width: min(420px, 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 32px 26px;
+  border: 1px solid var(--al-border);
+  border-radius: var(--al-radius-xl);
+  background: #fff;
+  box-shadow: var(--al-shadow-md);
+  text-align: center;
+}
+
+.app-screen-icon {
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--al-accent-border);
+  border-radius: 16px;
+  background: var(--al-accent-soft);
+  color: var(--al-accent);
+}
+
+.app-screen-card h1 {
+  color: var(--al-primary);
+  font-size: 19px;
+  font-weight: 760;
+}
+
+.app-screen-card p {
+  color: var(--al-text-muted);
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.app-screen-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+@media (max-width: 560px) {
+  .auth-card {
+    padding: 20px;
+  }
+
+  .app-userbar {
+    padding: 6px 12px;
+    gap: 8px;
+  }
+
+  .app-userbar-email {
+    display: none;
+  }
+}

@@ -2,6 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
 import './ux-overrides.css';
+import './auth.css';
 import App from './App';
 
 createRoot(document.getElementById('root')!).render(
