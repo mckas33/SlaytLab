@@ -5,12 +5,16 @@ import HomePage from './components/HomePage';
 import { GamePage } from './components/GamePage';
 import { ResultPage } from './components/ResultPage';
 import EditorPage from './components/EditorPage';
+import ProfilePage from './components/ProfilePage';
 import UserBar from './components/UserBar';
 import AuthPage from './components/auth/AuthPage';
+import EmailConfirmPage from './components/auth/EmailConfirmPage';
+import PasswordUpdatePage from './components/auth/PasswordUpdatePage';
 import { DialogProvider } from './components/DialogProvider';
 import { ToastProvider } from './components/ToastProvider';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { SlideProvider, useSlides } from './contexts/SlideContext';
+import { useToast } from './components/ToastProvider';
 import { isSupabaseConfigured } from './lib/supabase';
 import type { Page } from './types/anatomy';
 import { buildSession, type GameQuestion } from './types/session';
@@ -57,6 +61,7 @@ function ScreenState({ icon, title, message, children }: ScreenStateProps) {
 function AppInner() {
   const { slides, setSlides, loading, loadError, loadSlides } = useSlides();
   const { signOut } = useAuth();
+  const { showToast } = useToast();
 
   const [page, setPage] = useState<Page>('home');
   const [selectedSlideId, setSelectedSlideId] = useState<string | null>(null);
@@ -125,7 +130,11 @@ function AppInner() {
         <button
           type="button"
           className="secondary-button"
-          onClick={() => void signOut()}
+          onClick={() => {
+            void signOut().then((result) => {
+              if (result.error) showToast(result.error, 'error');
+            });
+          }}
         >
           <LogOut size={16} />
           Çıkış Yap
@@ -134,10 +143,27 @@ function AppInner() {
     );
   }
 
+  if (page === 'profile') {
+    return (
+      <>
+        <UserBar
+          onOpenProfile={() => setPage('profile')}
+          onGoHome={handleReturnHome}
+          isHome={false}
+        />
+        <ProfilePage onBack={handleReturnHome} />
+      </>
+    );
+  }
+
   if (page === 'home') {
     return (
       <>
-        <UserBar />
+        <UserBar
+          onOpenProfile={() => setPage('profile')}
+          onGoHome={handleReturnHome}
+          isHome
+        />
         <HomePage
           slides={slides}
           onStartGame={handleStartGame}
@@ -150,7 +176,11 @@ function AppInner() {
   if (page === 'editor') {
     return (
       <>
-        <UserBar />
+        <UserBar
+          onOpenProfile={() => setPage('profile')}
+          onGoHome={handleReturnHome}
+          isHome={false}
+        />
         <EditorPage
           slides={slides}
           selectedSlideId={selectedSlideId}
@@ -186,7 +216,12 @@ function AppInner() {
 }
 
 function Gate() {
-  const { user, loading } = useAuth();
+  const {
+    user,
+    loading,
+    passwordRecoveryStatus,
+    emailConfirmStatus,
+  } = useAuth();
 
   if (!isSupabaseConfigured) {
     return (
@@ -205,6 +240,14 @@ function Gate() {
         title="Yükleniyor..."
       />
     );
+  }
+
+  if (passwordRecoveryStatus !== 'none') {
+    return <PasswordUpdatePage />;
+  }
+
+  if (emailConfirmStatus === 'success' || emailConfirmStatus === 'error') {
+    return <EmailConfirmPage />;
   }
 
   if (!user) {

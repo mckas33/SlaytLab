@@ -249,6 +249,10 @@ export function ResultPage({
 
         </main>
       </div>
+      <footer className="home-footer result-page-footer">
+        <strong>© 2026 SlaytLab</strong>
+        <span>Tüm hakları saklıdır.</span>
+      </footer>
     </div>
   );
 }

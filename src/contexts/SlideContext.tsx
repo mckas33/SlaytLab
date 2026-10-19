@@ -32,6 +32,34 @@ interface SlideContextValue {
 }
 
 const SAVE_DELAY_MS = 600;
+const SLIDE_LOAD_RETRY_DELAYS_MS = [500, 1500];
+
+function isFutureIssuedJwtError(error: unknown): boolean {
+  return (
+    error instanceof Error &&
+    'code' in error &&
+    error.code === 'PGRST303' &&
+    error.message.toLowerCase().includes('jwt issued at future')
+  );
+}
+
+async function fetchSlidesWithRetry(): Promise<Slide[]> {
+  for (let retry = 0; ; retry += 1) {
+    try {
+      return await fetchSlides();
+    } catch (error) {
+      const delay = SLIDE_LOAD_RETRY_DELAYS_MS[retry];
+
+      if (!isFutureIssuedJwtError(error) || delay === undefined) {
+        throw error;
+      }
+
+      await new Promise<void>((resolve) => {
+        window.setTimeout(resolve, delay);
+      });
+    }
+  }
+}
 
 const SlideContext = createContext<SlideContextValue | null>(null);
 
@@ -58,6 +86,8 @@ export function SlideProvider({ children }: { children: ReactNode }) {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
 
+  const mountedRef = useRef(false);
+  const loadPromiseRef = useRef<Promise<void> | null>(null);
   const slidesRef = useRef<Slide[]>([]);
   const persistedRef = useRef<Slide[]>([]);
   const timerRef = useRef<number | null>(null);
@@ -130,27 +160,43 @@ export function SlideProvider({ children }: { children: ReactNode }) {
     [scheduleFlush]
   );
 
-  const loadSlides = useCallback(async () => {
-    if (!userId) return;
+  const loadSlides = useCallback((): Promise<void> => {
+    if (!userId) return Promise.resolve();
+    if (loadPromiseRef.current) return loadPromiseRef.current;
 
     setLoading(true);
     setLoadError(null);
 
-    try {
-      const loaded = await fetchSlides();
+    const request = (async () => {
+      try {
+        const loaded = await fetchSlidesWithRetry();
 
-      slidesRef.current = loaded;
-      persistedRef.current = loaded;
-      setSlidesState(loaded);
-      setSaveStatus('idle');
-    } catch (error) {
-      console.error('Slaytlar yüklenemedi:', error);
-      setLoadError(
-        error instanceof Error ? error.message : 'Slaytlar yüklenemedi.'
-      );
-    } finally {
-      setLoading(false);
-    }
+        if (!mountedRef.current) return;
+
+        slidesRef.current = loaded;
+        persistedRef.current = loaded;
+        setSlidesState(loaded);
+        setSaveStatus('idle');
+      } catch (error) {
+        if (!mountedRef.current) return;
+
+        console.error('Slaytlar yüklenemedi:', error);
+        setLoadError(
+          error instanceof Error ? error.message : 'Slaytlar yüklenemedi.'
+        );
+      } finally {
+        if (mountedRef.current) setLoading(false);
+      }
+    })();
+
+    loadPromiseRef.current = request;
+    void request.then(() => {
+      if (loadPromiseRef.current === request) {
+        loadPromiseRef.current = null;
+      }
+    });
+
+    return request;
   }, [userId]);
 
   const createSlide = useCallback(
@@ -190,7 +236,12 @@ export function SlideProvider({ children }: { children: ReactNode }) {
   );
 
   useEffect(() => {
+    mountedRef.current = true;
     void loadSlides();
+
+    return () => {
+      mountedRef.current = false;
+    };
   }, [loadSlides]);
 
   useEffect(() => clearTimer, [clearTimer]);

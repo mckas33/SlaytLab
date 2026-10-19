@@ -1,34 +1,54 @@
-import { useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent } from 'react';
 import { AlertCircle, Loader2, LogIn, Mail } from 'lucide-react';
 
 import { useAuth } from '../../contexts/AuthContext';
+import { isValidEmail } from '../../utils/authValidation';
 import PasswordInput from './PasswordInput';
 
-export default function LoginPage() {
+interface Props {
+  onForgotPassword: () => void;
+}
+
+export default function LoginPage({ onForgotPassword }: Props) {
   const { signIn } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const submittingRef = useRef(false);
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (submitting) return;
+    if (submittingRef.current) return;
 
-    if (!email.trim() || !password) {
+    const normalizedEmail = email.trim();
+
+    if (!normalizedEmail || !password) {
       setError('E-posta ve şifre gerekli.');
       return;
     }
 
+    if (!isValidEmail(normalizedEmail)) {
+      setError('Geçerli bir e-posta adresi gir.');
+      return;
+    }
+
+    submittingRef.current = true;
     setSubmitting(true);
     setError('');
 
-    const result = await signIn(email, password);
+    try {
+      const result = await signIn(normalizedEmail, password);
 
-    if (result.error) {
-      setError(result.error);
+      if (result.error) {
+        setError(result.error);
+      }
+    } catch {
+      setError('Giriş sırasında bir hata oluştu. Lütfen tekrar dene.');
+    } finally {
+      submittingRef.current = false;
       setSubmitting(false);
     }
   };
@@ -51,9 +71,12 @@ export default function LoginPage() {
               id="login-email"
               type="email"
               value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              onChange={(event) => {
+                setEmail(event.target.value);
+                setError('');
+              }}
               autoComplete="email"
-              placeholder="ornek@gmail.com"
+              placeholder="e-posta@ornek.com"
               disabled={submitting}
               autoFocus
               required
@@ -67,11 +90,24 @@ export default function LoginPage() {
           <PasswordInput
             id="login-password"
             value={password}
-            onChange={setPassword}
+            onChange={(value) => {
+              setPassword(value);
+              setError('');
+            }}
             autoComplete="current-password"
             placeholder="Şifreni gir"
             disabled={submitting}
           />
+        </div>
+
+        <div className="auth-link-row">
+          <button
+            type="button"
+            className="auth-text-link"
+            onClick={onForgotPassword}
+          >
+            Şifremi unuttum?
+          </button>
         </div>
 
         {error && (

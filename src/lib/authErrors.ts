@@ -1,6 +1,22 @@
 import type { AuthError } from '@supabase/supabase-js';
 
-export function translateAuthError(error: AuthError): string {
+export function isDuplicateEmailError(error: AuthError): boolean {
+  return (
+    error.code === 'user_already_exists' ||
+    error.code === 'email_exists' ||
+    error.message.toLowerCase().includes('already registered')
+  );
+}
+
+export function translateAuthError(
+  error: AuthError,
+  context: 'default' | 'email-change' = 'default'
+): string {
+  const duplicateEmailMessage =
+    context === 'email-change'
+      ? 'E-posta adresi değiştirilemedi. Farklı bir adres deneyebilirsin.'
+      : 'Bu e-posta ile zaten bir hesap var.';
+
   switch (error.code) {
     case 'invalid_credentials':
       return 'E-posta veya şifre hatalı.';
@@ -8,9 +24,9 @@ export function translateAuthError(error: AuthError): string {
       return 'E-posta adresin henüz doğrulanmamış. Gelen kutunu kontrol et.';
     case 'user_already_exists':
     case 'email_exists':
-      return 'Bu e-posta ile zaten bir hesap var.';
+      return duplicateEmailMessage;
     case 'weak_password':
-      return 'Şifre çok zayıf. Daha uzun ve karmaşık bir şifre seç.';
+      return 'Şifre sağlayıcının güvenlik kurallarını karşılamıyor. Daha güçlü bir şifre seç.';
     case 'over_request_rate_limit':
     case 'over_email_send_rate_limit':
       return 'Çok fazla deneme yapıldı. Bir süre sonra tekrar dene.';
@@ -18,6 +34,15 @@ export function translateAuthError(error: AuthError): string {
       return 'Yeni kayıtlar şu anda kapalı.';
     case 'email_address_invalid':
       return 'Geçerli bir e-posta adresi gir.';
+    case 'validation_failed':
+      return 'Bilgiler doğrulanamadı. E-posta ve şifre kurallarını kontrol et.';
+    case 'otp_expired':
+    case 'flow_state_expired':
+      return 'Bağlantı geçersiz veya süresi dolmuş. Yeni bir sıfırlama bağlantısı iste.';
+    case 'bad_code_verifier':
+      return 'Bağlantı doğrulanamadı. Yeni bir sıfırlama bağlantısı iste.';
+    case 'same_password':
+      return 'Yeni şifren mevcut şifrenle aynı olamaz.';
     default:
       break;
   }
@@ -29,7 +54,7 @@ export function translateAuthError(error: AuthError): string {
   }
 
   if (message.includes('already registered')) {
-    return 'Bu e-posta ile zaten bir hesap var.';
+    return duplicateEmailMessage;
   }
 
   if (message.includes('email not confirmed')) {

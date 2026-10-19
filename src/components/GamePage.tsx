@@ -225,7 +225,7 @@ export function GamePage({
 
         {/* QUESTION HEADER */}
         <section className="game-question-header">
-          <div className="game-question-heading">
+          <div className="game-question-topline">
             <div className="game-question-meta">
               <span className="game-label">
                 {question.slideName}
@@ -239,43 +239,49 @@ export function GamePage({
               </span>
             </div>
 
+            <div className="game-score-panel">
+              <div className="game-score-item correct">
+                <CheckCircle2 size={16} />
+                <div>
+                  <small>
+                    DOĞRU
+                  </small>
+                  <strong>
+                    {results.correct}
+                  </strong>
+                </div>
+              </div>
+
+              <div className="game-score-divider" />
+
+              <div className="game-score-item wrong">
+                <XCircle size={16} />
+                <div>
+                  <small>
+                    YANLIŞ
+                  </small>
+                  <strong>
+                    {results.wrong}
+                  </strong>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="game-title-card">
             <h1 className="game-title">
               {question.title}
             </h1>
-          </div>
-
-          <div className="game-score-panel">
-            <div className="game-score-item correct">
-              <CheckCircle2 size={16} />
-              <div>
-                <small>
-                  DOĞRU
-                </small>
-                <strong>
-                  {results.correct}
-                </strong>
-              </div>
-            </div>
-
-            <div className="game-score-divider" />
-
-            <div className="game-score-item wrong">
-              <XCircle size={16} />
-              <div>
-                <small>
-                  YANLIŞ
-                </small>
-                <strong>
-                  {results.wrong}
-                </strong>
-              </div>
-            </div>
           </div>
         </section>
 
         {/* QUESTION */}
         <main
           className={`anatomy-card ${
+            question.type === 'multiple_choice'
+              ? 'has-multiple-choice'
+              : ''
+          } ${
             answered
               ? 'is-answered'
               : ''
@@ -515,6 +521,11 @@ export function GamePage({
         </footer>
 
       </div>
+
+      <footer className="home-footer game-page-footer">
+        <strong>© 2026 SlaytLab</strong>
+        <span>Tüm hakları saklıdır.</span>
+      </footer>
     </div>
   );
 }

@@ -24,6 +24,7 @@ import {
   Pencil,
   Plus,
   Shapes,
+  Sparkles,
 } from 'lucide-react';
 
 import type { Dispatch, SetStateAction } from 'react';
@@ -47,6 +48,7 @@ import MultipleTextEditor from './editors/MultipleTextEditor';
 import WrittenEditor from './editors/WrittenEditor';
 import RegionQuestionEditor from './editors/RegionQuestionEditor';
 import FlashcardEditor from './editors/FlashcardEditor';
+import ImportQuestionsModal from './ImportQuestionsModal';
 
 interface Props {
   slides: Slide[];
@@ -68,6 +70,7 @@ export default function EditorPage({
 }: Props) {
   const [tab, setTab] = useState<'regions' | 'questions'>('questions');
   const [showTypes, setShowTypes] = useState(false);
+  const [showImport, setShowImport] = useState(false);
   const [editorType, setEditorType] = useState<QuestionType | null>(null);
   const [editingQuestion, setEditingQuestion] = useState<
     Question | undefined
@@ -258,6 +261,14 @@ export default function EditorPage({
     );
   };
 
+  const importQuestions = (questions: Question[]) => {
+    updateSelected((slide) => ({
+      ...slide,
+      questions: [...slide.questions, ...questions],
+    }));
+    setShowImport(false);
+  };
+
   const openQuestionEditor = (
     type: QuestionType,
     question?: Question
@@ -332,43 +343,25 @@ export default function EditorPage({
 
   return (
     <div className="editor-page">
-      {/* TOP BAR */}
-      <header className="editor-topbar">
-        <button
-          type="button"
-          className="back-home-button"
-          onClick={onReturnHome}
-        >
-          <ArrowLeft size={17} />
-          <span>Ana Sayfa</span>
-        </button>
+      <div className={`editor-layout ${selected ? '' : 'editor-layout-empty'}`}>
+        <div className="editor-sidebar-column">
+          <button
+            type="button"
+            className="secondary-button editor-back-button"
+            onClick={onReturnHome}
+          >
+            <ArrowLeft size={17} />
+            <span>Geri</span>
+          </button>
 
-        <div className="editor-brand">
-          <span className="editor-brand-mark">
-            <Layers3 size={17} />
-          </span>
-
-          <div>
-            <strong>SlaytLab</strong>
-            <span>İçerik Editörü</span>
-          </div>
+          <SlideList
+            slides={slides}
+            selectedId={selectedSlideId}
+            onSelect={onSelectSlide}
+            onAdd={openCreateSlide}
+            onDelete={deleteSlide}
+          />
         </div>
-
-        <div className="editor-topbar-status">
-          <span className="editor-status-dot" />
-          <span>Bulut kaydı</span>
-        </div>
-      </header>
-
-      <div className="editor-layout">
-        {/* LEFT SIDEBAR */}
-        <SlideList
-          slides={slides}
-          selectedId={selectedSlideId}
-          onSelect={onSelectSlide}
-          onAdd={openCreateSlide}
-          onDelete={deleteSlide}
-        />
 
         {/* MAIN */}
         <main className="editor-main">
@@ -516,14 +509,25 @@ export default function EditorPage({
                       </p>
                     </div>
 
-                    <button
-                      type="button"
-                      className="add-question-button"
-                      onClick={() => setShowTypes(true)}
-                    >
-                      <Plus size={17} />
-                      Soru Ekle
-                    </button>
+                    <div className="question-section-actions">
+                      <button
+                        type="button"
+                        className="secondary-button"
+                        onClick={() => setShowImport(true)}
+                      >
+                        <Sparkles size={16} />
+                        Yapay zekâ ile soru oluştur
+                      </button>
+
+                      <button
+                        type="button"
+                        className="add-question-button"
+                        onClick={() => setShowTypes(true)}
+                      >
+                        <Plus size={17} />
+                        Soru Ekle
+                      </button>
+                    </div>
                   </div>
 
                   <DndContext
@@ -555,16 +559,25 @@ export default function EditorPage({
                               sınavını oluşturmaya başlayabilirsin.
                             </p>
 
-                            <button
-                              type="button"
-                              className="primary-button"
-                              onClick={() =>
-                                setShowTypes(true)
-                              }
-                            >
-                              <Plus size={16} />
-                              İlk Soruyu Ekle
-                            </button>
+                            <div className="editor-empty-actions">
+                              <button
+                                type="button"
+                                className="primary-button"
+                                onClick={() => setShowTypes(true)}
+                              >
+                                <Plus size={16} />
+                                İlk Soruyu Ekle
+                              </button>
+
+                              <button
+                                type="button"
+                                className="secondary-button"
+                                onClick={() => setShowImport(true)}
+                              >
+                                <Sparkles size={16} />
+                                Yapay zekâ ile oluştur
+                              </button>
+                            </div>
                           </div>
                         ) : (
                           selected.questions.map(
@@ -624,11 +637,25 @@ export default function EditorPage({
         </main>
       </div>
 
+      <footer className="home-footer editor-footer">
+        <strong>© 2026 SlaytLab</strong>
+        <span>Tüm hakları saklıdır.</span>
+      </footer>
+
       {/* QUESTION TYPE MODAL */}
       {showTypes && (
         <QuestionTypeModal
           onSelect={(type) => openQuestionEditor(type)}
           onClose={() => setShowTypes(false)}
+        />
+      )}
+
+      {showImport && selected && (
+        <ImportQuestionsModal
+          slideName={selected.name}
+          existingQuestions={selected.questions}
+          onImport={importQuestions}
+          onClose={() => setShowImport(false)}
         />
       )}
 

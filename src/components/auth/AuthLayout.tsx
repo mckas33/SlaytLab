@@ -18,7 +18,10 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
 
         <main className="auth-card">{children}</main>
 
-        <p className="auth-footer">© 2026 SlaytLab</p>
+        <footer className="auth-footer">
+          <strong>© 2026 SlaytLab</strong>
+          <span>Tüm hakları saklıdır.</span>
+        </footer>
       </div>
     </div>
   );

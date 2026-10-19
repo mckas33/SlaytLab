@@ -8,6 +8,8 @@ interface Props {
   autoComplete: 'current-password' | 'new-password';
   placeholder?: string;
   disabled?: boolean;
+  'aria-describedby'?: string;
+  'aria-invalid'?: boolean;
 }
 
 export default function PasswordInput({
@@ -17,6 +19,8 @@ export default function PasswordInput({
   autoComplete,
   placeholder,
   disabled,
+  'aria-describedby': ariaDescribedBy,
+  'aria-invalid': ariaInvalid,
 }: Props) {
   const [visible, setVisible] = useState(false);
 
@@ -33,6 +37,8 @@ export default function PasswordInput({
         placeholder={placeholder}
         disabled={disabled}
         required
+        aria-describedby={ariaDescribedBy}
+        aria-invalid={ariaInvalid}
       />
 
       <button
@@ -40,7 +46,8 @@ export default function PasswordInput({
         className="auth-eye"
         onClick={() => setVisible((current) => !current)}
         aria-label={visible ? 'Şifreyi gizle' : 'Şifreyi göster'}
-        tabIndex={-1}
+        aria-pressed={visible}
+        disabled={disabled}
       >
         {visible ? <EyeOff size={16} /> : <Eye size={16} />}
       </button>

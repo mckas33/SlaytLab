@@ -1,17 +1,27 @@
-import { useState, type FormEvent } from 'react';
-import { AlertCircle, Loader2, Mail, MailCheck, UserPlus } from 'lucide-react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
+import {
+  AlertCircle,
+  Loader2,
+  Mail,
+  MailCheck,
+  RefreshCw,
+  UserPlus,
+} from 'lucide-react';
 
 import { useAuth } from '../../contexts/AuthContext';
+import {
+  getPasswordError,
+  getPasswordRequirements,
+  isValidEmail,
+} from '../../utils/authValidation';
 import PasswordInput from './PasswordInput';
-
-const MIN_PASSWORD_LENGTH = 8;
 
 interface Props {
   onGoToLogin: () => void;
 }
 
 export default function RegisterPage({ onGoToLogin }: Props) {
-  const { signUp } = useAuth();
+  const { signUp, resendSignupConfirmation } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -19,40 +29,108 @@ export default function RegisterPage({ onGoToLogin }: Props) {
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [confirmedEmail, setConfirmedEmail] = useState<string | null>(null);
+  const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [resendMessage, setResendMessage] = useState('');
+  const [resendHasError, setResendHasError] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const submittingRef = useRef(false);
+  const resendRef = useRef(false);
+  const passwordsMatch = password === confirm;
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+
+    const timer = window.setTimeout(() => {
+      setResendCooldown((current) => Math.max(0, current - 1));
+    }, 1000);
+
+    return () => window.clearTimeout(timer);
+  }, [resendCooldown]);
+
+  const resendConfirmation = async () => {
+    if (!confirmedEmail || resendRef.current || resendCooldown > 0) return;
+
+    resendRef.current = true;
+    setResending(true);
+    setResendMessage('');
+
+    try {
+      const result = await resendSignupConfirmation(confirmedEmail);
+      setResendHasError(Boolean(result.error));
+      setResendMessage(
+        result.error ??
+          'İstek alındı. E-posta adresin için doğrulama bağlantısı gönderildiyse gelen kutunu kontrol et.'
+      );
+      setResendCooldown(30);
+    } catch {
+      setResendHasError(true);
+      setResendMessage('E-posta gönderilemedi. Lütfen daha sonra tekrar dene.');
+      setResendCooldown(30);
+    } finally {
+      resendRef.current = false;
+      setResending(false);
+    }
+  };
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setHasAttemptedSubmit(true);
 
-    if (submitting) return;
+    if (submittingRef.current) return;
 
-    if (!email.trim()) {
+    const normalizedEmail = email.trim();
+
+    if (!normalizedEmail) {
       setError('E-posta adresi gerekli.');
       return;
     }
 
-    if (password.length < MIN_PASSWORD_LENGTH) {
-      setError(`Şifre en az ${MIN_PASSWORD_LENGTH} karakter olmalı.`);
+    if (!isValidEmail(normalizedEmail)) {
+      setError('Geçerli bir e-posta adresi gir.');
       return;
     }
 
-    if (password !== confirm) {
+    if (getPasswordError(password)) {
+      const unmet = getPasswordRequirements(password).filter(
+        (requirement) => !requirement.valid
+      );
+
+      setError(
+        unmet.length === 1
+          ? unmet[0].error
+          : `Şifre şu kuralları karşılamalı: ${unmet
+              .map((requirement) => requirement.label)
+              .join('; ')}.`
+      );
+      return;
+    }
+
+    if (!passwordsMatch) {
       setError('Şifreler eşleşmiyor.');
       return;
     }
 
+    submittingRef.current = true;
     setSubmitting(true);
     setError('');
 
-    const result = await signUp(email, password);
+    try {
+      const result = await signUp(normalizedEmail, password);
 
-    if (result.error) {
-      setError(result.error);
-      setSubmitting(false);
-      return;
-    }
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
 
-    if (result.needsEmailConfirmation) {
-      setConfirmedEmail(email.trim());
+      if (result.needsEmailConfirmation) {
+        setConfirmedEmail(normalizedEmail);
+        setResendCooldown(30);
+      }
+    } catch {
+      setError('Kayıt sırasında bir hata oluştu. Lütfen tekrar dene.');
+    } finally {
+      submittingRef.current = false;
       setSubmitting(false);
     }
   };
@@ -67,9 +145,37 @@ export default function RegisterPage({ onGoToLogin }: Props) {
         <h1>E-postanı doğrula</h1>
 
         <p>
-          <strong>{confirmedEmail}</strong> adresine bir doğrulama bağlantısı
-          gönderdik. Bağlantıya tıkladıktan sonra giriş yapabilirsin.
+          Kayıt isteğin alındı. E-posta adresin için bir doğrulama bağlantısı
+          gönderildiyse gelen kutunu kontrol et. Hesabın varsa giriş yapabilir
+          veya parolanı sıfırlayabilirsin.
         </p>
+
+        <button
+          type="button"
+          className="secondary-button auth-resend-button"
+          onClick={() => void resendConfirmation()}
+          disabled={resending || resendCooldown > 0}
+        >
+          {resending ? (
+            <Loader2 size={15} className="auth-spinner" />
+          ) : (
+            <RefreshCw size={15} />
+          )}
+          {resending
+            ? 'Gönderiliyor...'
+            : resendCooldown > 0
+              ? `Yeniden gönder (${resendCooldown} sn)`
+              : 'Doğrulama e-postasını yeniden gönder'}
+        </button>
+
+        {resendMessage && (
+          <p
+            className={resendHasError ? 'auth-error-text' : 'auth-status-text'}
+            role={resendHasError ? 'alert' : 'status'}
+          >
+            {resendMessage}
+          </p>
+        )}
 
         <button
           type="button"
@@ -100,9 +206,12 @@ export default function RegisterPage({ onGoToLogin }: Props) {
               id="register-email"
               type="email"
               value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              onChange={(event) => {
+                setEmail(event.target.value);
+                setError('');
+              }}
               autoComplete="email"
-              placeholder="ornek@gmail.com"
+              placeholder="e-posta@ornek.com"
               disabled={submitting}
               autoFocus
               required
@@ -116,9 +225,12 @@ export default function RegisterPage({ onGoToLogin }: Props) {
           <PasswordInput
             id="register-password"
             value={password}
-            onChange={setPassword}
+            onChange={(value) => {
+              setPassword(value);
+              setError('');
+            }}
             autoComplete="new-password"
-            placeholder={`En az ${MIN_PASSWORD_LENGTH} karakter`}
+            placeholder="Güçlü bir şifre oluştur"
             disabled={submitting}
           />
         </div>
@@ -129,10 +241,14 @@ export default function RegisterPage({ onGoToLogin }: Props) {
           <PasswordInput
             id="register-confirm"
             value={confirm}
-            onChange={setConfirm}
+            onChange={(value) => {
+              setConfirm(value);
+              setError('');
+            }}
             autoComplete="new-password"
             placeholder="Şifreni tekrar gir"
             disabled={submitting}
+            aria-invalid={hasAttemptedSubmit && confirm.length > 0 && !passwordsMatch}
           />
         </div>
 

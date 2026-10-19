@@ -401,6 +401,16 @@ function questionWrite(
 
 /* ---------- Okuma ---------- */
 
+export class SlideFetchError extends Error {
+  readonly code: string;
+
+  constructor(code: string, message: string) {
+    super(message);
+    this.name = 'SlideFetchError';
+    this.code = code;
+  }
+}
+
 export async function fetchSlides(): Promise<Slide[]> {
   const [slidesRes, imagesRes, regionsRes, questionsRes] = await Promise.all([
     supabase.from('slides').select('*').order('created_at', { ascending: true }),
@@ -411,7 +421,7 @@ export async function fetchSlides(): Promise<Slide[]> {
 
   for (const response of [slidesRes, imagesRes, regionsRes, questionsRes]) {
     if (response.error) {
-      throw new Error(response.error.message);
+      throw new SlideFetchError(response.error.code, response.error.message);
     }
   }
 

@@ -1,4 +1,4 @@
-export type Page = 'home' | 'game' | 'result' | 'editor';
+export type Page = 'home' | 'game' | 'result' | 'editor' | 'profile';
 
 export type RegionType = 'rectangle' | 'polygon';
 

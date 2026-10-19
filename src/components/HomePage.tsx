@@ -7,6 +7,7 @@ import {
   FileQuestion,
   Layers3,
   Play,
+  Search,
   Shuffle,
   Sparkles,
   Target,
@@ -28,7 +29,15 @@ export default function HomePage({
 }: Props) {
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<string[]>([]);
+  const [slideQuery, setSlideQuery] = useState('');
   const [shuffle, setShuffle] = useState(false);
+
+  const normalizedSlideQuery = slideQuery.trim().toLocaleLowerCase('tr');
+  const filteredSlides = normalizedSlideQuery
+    ? slides.filter((slide) =>
+        slide.name.toLocaleLowerCase('tr').includes(normalizedSlideQuery)
+      )
+    : slides;
 
   const totalQuestions = useMemo(
     () =>
@@ -69,6 +78,7 @@ export default function HomePage({
 
   const openStartModal = () => {
     setSelected([]);
+    setSlideQuery('');
     setShuffle(false);
     setOpen(true);
   };
@@ -95,28 +105,6 @@ export default function HomePage({
   return (
     <div className="home-page">
       <div className="home-shell">
-        <header className="home-header">
-          <div className="home-brand">
-            <div className="home-brand-mark">
-              <Layers3 size={20} strokeWidth={2.2} />
-            </div>
-
-            <div>
-              <strong>SlaytLab</strong>
-              <span>Eğitim platformu</span>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            className="home-editor-link"
-            onClick={onOpenEditor}
-          >
-            İçerik Editörü
-            <ArrowRight size={15} />
-          </button>
-        </header>
-
         <main className="home-main">
           <section className="home-hero">
             <div className="home-hero-copy">
@@ -132,8 +120,10 @@ export default function HomePage({
               </h1>
 
               <p>
-                Görselleri incele, soruları çöz ve anatomik bilgini
-                interaktif bir çalışma deneyimiyle geliştir.
+                Yapay zekânın hazırladığı soruları tek tıkla setine ekle,
+                istediğin sırayla çöz, sonuçları analiz et, görselleri
+                incele ve anatomik bilgini interaktif bir çalışma
+                deneyimiyle geliştir.
               </p>
 
               <div className="home-actions">
@@ -239,13 +229,12 @@ export default function HomePage({
           <section className="home-features">
             <article className="home-feature-card">
               <div className="home-feature-icon">
-                <Target size={18} />
+                <Sparkles size={18} />
               </div>
               <div>
-                <strong>Görsel öğrenme</strong>
+                <strong>Yapay Zekâ Desteği</strong>
                 <p>
-                  Anatomik yapıları görseller üzerinden
-                  etkileşimli şekilde keşfet.
+                  Yapay zekâ tarafından hazırlanan soruları tek tıkla kendi setine ekle.
                 </p>
               </div>
               <ChevronRight size={17} />
@@ -260,6 +249,20 @@ export default function HomePage({
                 <p>
                   İstediğin slaytları seç ve soruları kendi
                   çalışma düzeninde çöz.
+                </p>
+              </div>
+              <ChevronRight size={17} />
+            </article>
+
+            <article className="home-feature-card">
+              <div className="home-feature-icon">
+                <Target size={18} />
+              </div>
+              <div>
+                <strong>Görsel öğrenme</strong>
+                <p>
+                  Anatomik yapıları görseller üzerinden
+                  etkileşimli şekilde keşfet.
                 </p>
               </div>
               <ChevronRight size={17} />
@@ -350,6 +353,19 @@ export default function HomePage({
                   )}
                 </div>
 
+                {slides.length > 0 && (
+                  <div className="home-slide-search">
+                    <Search size={15} />
+                    <input
+                      type="search"
+                      value={slideQuery}
+                      onChange={(event) => setSlideQuery(event.target.value)}
+                      placeholder="Slayt ara..."
+                      aria-label="Slayt ara"
+                    />
+                  </div>
+                )}
+
                 <div className="home-slide-list">
                   {slides.length === 0 ? (
                     <div className="home-no-slides">
@@ -365,8 +381,18 @@ export default function HomePage({
                         </p>
                       </div>
                     </div>
+                  ) : filteredSlides.length === 0 ? (
+                    <div className="home-slide-search-empty">
+                      <Search size={18} />
+                      <span>
+                        "{slideQuery}" ile eşleşen slayt bulunamadı.
+                      </span>
+                    </div>
                   ) : (
-                    slides.map((slide, index) => {
+                    filteredSlides.map((slide) => {
+                      const index = slides.findIndex(
+                        (item) => item.id === slide.id
+                      );
                       const isSelected = selected.includes(slide.id);
 
                       return (
